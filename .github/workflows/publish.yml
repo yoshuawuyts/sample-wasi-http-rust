@@ -62,7 +62,7 @@ jobs:
       - name: Publish to GitHub Container Registry
         uses: duffney/wkg-github-action@9680cbd1dd38119bbc519c6c3e0b7fffe0b4982c
         with:
-          file: target/wasm32-wasi/release/rust_wasi_hello.wasm
+          file: target/wasm32-wasip1/release/rust_wasi_hello.wasm
           oci-reference-without-tag: ghcr.io/${{ github.actor }}/rust-wasi-hello
           version: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
