@@ -67,8 +67,8 @@ jobs:
         uses: duffney/wkg-github-action@9680cbd1dd38119bbc519c6c3e0b7fffe0b4982c
         with:
           file: target/wasm32-wasip1/release/rust_wasi_hello.wasm
-          oci-reference-without-tag: ghcr.io/${{ IMAGE_NAME }}/rust-wasi-hello
+          oci-reference-without-tag: ghcr.io/${{ env.IMAGE_NAME }}/rust-wasi-hello
           version: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
       - name: Sign the wasm component
-        run: cosign sign --yes ghcr.io/${{ IMAGE_NAME }}/rust-wasi-hello@${{ steps.publish.outputs.digest }}
+        run: cosign sign --yes ghcr.io/${{ env.IMAGE_NAME }}/rust-wasi-hello@${{ steps.publish.outputs.digest }}
