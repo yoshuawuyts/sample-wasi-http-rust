@@ -64,6 +64,7 @@ jobs:
       # using my version until the PR is merged upstream
       # https://github.com/bytecodealliance/wkg-github-action/pull/7
       - name: Publish to GitHub Container Registry
+        id: publish
         uses: duffney/wkg-github-action@9680cbd1dd38119bbc519c6c3e0b7fffe0b4982c
         with:
           file: target/wasm32-wasip1/release/rust_wasi_hello.wasm
