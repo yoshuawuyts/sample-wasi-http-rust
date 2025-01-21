@@ -63,9 +63,9 @@ jobs:
         id: publish
         uses: bytecodealliance/wkg-github-action@v5
         with:
-          file: target/wasm32-wasip1/release/${{ env.COMPONENT_NAME }}.wasm
+          file: target/wasm32-wasip1/release/rust_wasi_hello.wasm
           oci-reference-without-tag: ghcr.io/${{ env.IMAGE_NAME }}/${{ env.COMPONENT_NAME }}
           version: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
       - name: Sign the wasm component
-        run: cosign sign --yes ghcr.io/${{ env.IMAGE_NAME }}/${{ env.COMPONENT_NAME}}@${{ steps.publish.outputs.digest }}
+        run: cosign sign --yes ghcr.io/${{ env.IMAGE_NAME }}/@${{ steps.publish.outputs.digest }}
