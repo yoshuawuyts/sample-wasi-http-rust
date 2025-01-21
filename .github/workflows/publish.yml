@@ -68,4 +68,4 @@ jobs:
           version: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
       - name: Sign the wasm component
-        run: cosign sign --yes ghcr.io/${{ env.IMAGE_NAME }}/@${{ steps.publish.outputs.digest }}
+        run: cosign sign --yes ghcr.io/${{ env.IMAGE_NAME }}/${{ env.COMPONENT_NAME }}@${{ steps.publish.outputs.digest }}
