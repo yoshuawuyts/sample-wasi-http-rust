@@ -8,6 +8,7 @@ on:
 
 env:
   IMAGE_NAME: ${{ github.repository }}
+  COMPONENT_NAME: rust-wasi-hello
 
 jobs:
   publish:
@@ -24,7 +25,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.actor }}/rust-wasi-hello
+          images: ghcr.io/${{ github.actor }}/{{ env.COMPONENT_NAME }}
           tags: |
             type=semver,pattern={{version}}
       - name: Login to GitHub Container Registry
@@ -58,20 +59,13 @@ jobs:
       - name: Run build script
         run: bash scripts/build.sh
 
-      # - name: Run publish script
-      #   run: bash scripts/publish.sh ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
-
-      # using my version until the PR is merged upstream
-      # https://github.com/bytecodealliance/wkg-github-action/pull/7
       - name: Publish to GitHub Container Registry
         id: publish
-        # uses: duffney/wkg-github-action@9680cbd1dd38119bbc519c6c3e0b7fffe0b4982c
-        #TODO: update to version after next release
-        uses: bytecodealliance/wkg-github-action@10b3b04b9059ba46208cd7daf7d352af14bded0f
+        uses: bytecodealliance/wkg-github-action@v5
         with:
-          file: target/wasm32-wasip1/release/rust_wasi_hello.wasm
-          oci-reference-without-tag: ghcr.io/${{ env.IMAGE_NAME }}/rust-wasi-hello
+          file: target/wasm32-wasip1/release/${{ env.COMPONENT_NAME }}.wasm
+          oci-reference-without-tag: ghcr.io/${{ env.IMAGE_NAME }}/${{ env.COMPONENT_NAME }}
           version: ${{ fromJSON(steps.meta.outputs.json).labels['org.opencontainers.image.version'] }}
 
       - name: Sign the wasm component
-        run: cosign sign --yes ghcr.io/${{ env.IMAGE_NAME }}/rust-wasi-hello@${{ steps.publish.outputs.digest }}
+        run: cosign sign --yes ghcr.io/${{ env.IMAGE_NAME }}/${{ env.COMPONENT_NAME}}@${{ steps.publish.outputs.digest }}
