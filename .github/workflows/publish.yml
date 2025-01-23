@@ -58,7 +58,7 @@ jobs:
         name: Install build dependencies
         continue-on-error: false
         run: |
-          cargo install cargo-component --force --version {{ env.CARGO_COMPONENT_VERSION }}
+          cargo install cargo-component --force --version ${{ env.CARGO_COMPONENT_VERSION }}
           cargo install wkg --force 
 
       - name: Build the component
