@@ -1,60 +1,72 @@
-pub use wasi::http::types::{
-    Fields, IncomingRequest, OutgoingBody, OutgoingResponse, ResponseOutparam,
-};
+use wstd::http::body::{BodyForthcoming, IncomingBody};
+use wstd::http::server::{Finished, Responder};
+use wstd::http::{IntoBody, Request, Response, StatusCode};
+use wstd::io::{copy, empty, AsyncWrite};
+use wstd::time::{Duration, Instant};
 
-struct Component;
-wasi::http::proxy::export!(Component);
-
-impl wasi::exports::http::incoming_handler::Guest for Component {
-    fn handle(req: IncomingRequest, outparam: ResponseOutparam) {
-        match req.path_with_query().unwrap().as_str() {
-            "/wait" => http_wait(req, outparam),
-            // "/echo" => {} // TODO
-            // "/host" => {} // TODO
-            "/" | _ => http_home(req, outparam),
-        }
+#[wstd::http_server]
+async fn main(req: Request<IncomingBody>, res: Responder) -> Finished {
+    match req.uri().path_and_query().unwrap().as_str() {
+        "/wait" => wait(req, res).await,
+        "/echo" => echo(req, res).await,
+        "/echo-headers" => echo_headers(req, res).await,
+        "/echo-trailers" => echo_trailers(req, res).await,
+        "/" => home(req, res).await,
+        _ => not_found(req, res).await,
     }
 }
 
-fn http_home(_req: IncomingRequest, outparam: ResponseOutparam) {
-    let headers = Fields::new();
-    let res = OutgoingResponse::new(headers);
-    let body = res.body().expect("outgoing response");
-
-    ResponseOutparam::set(outparam, Ok(res));
-
-    let out = body.write().expect("outgoing stream");
-    out.blocking_write_and_flush(b"Hello, wasi:http/proxy world!\n")
-        .expect("writing response");
-
-    drop(out);
-    OutgoingBody::finish(body, None).unwrap();
+async fn home(_req: Request<IncomingBody>, res: Responder) -> Finished {
+    // To send a single string as the response body, use `res::respond`.
+    res.respond(Response::new("Hello, wasi:http/proxy world!\n".into_body()))
+        .await
 }
 
-fn http_wait(_req: IncomingRequest, outparam: ResponseOutparam) {
+async fn wait(_req: Request<IncomingBody>, res: Responder) -> Finished {
     // Get the time now
-    let now = wasi::clocks::monotonic_clock::now();
+    let now = Instant::now();
 
-    // Sleep for 1 second
-    let nanos = 1_000_000_000;
-    let pollable = wasi::clocks::monotonic_clock::subscribe_duration(nanos);
-    pollable.block();
+    // Sleep for one second.
+    wstd::task::sleep(Duration::from_secs(1)).await;
 
     // Compute how long we slept for.
-    let elapsed = wasi::clocks::monotonic_clock::now() - now;
-    let elapsed = elapsed / 1_000_000; // change to millis
+    let elapsed = Instant::now().duration_since(now).as_millis();
 
-    let headers = Fields::new();
-    let res = OutgoingResponse::new(headers);
-    let body = res.body().expect("outgoing response");
+    // To stream data to the response body, use `res::start_response`.
+    let mut body = res.start_response(Response::new(BodyForthcoming));
+    let result = body
+        .write_all(format!("slept for {elapsed} millis\n").as_bytes())
+        .await;
+    Finished::finish(body, result, None)
+}
 
-    ResponseOutparam::set(outparam, Ok(res));
+async fn echo(mut req: Request<IncomingBody>, res: Responder) -> Finished {
+    // Stream data from the req body to the response body.
+    let mut body = res.start_response(Response::new(BodyForthcoming));
+    let result = copy(req.body_mut(), &mut body).await;
+    Finished::finish(body, result, None)
+}
 
-    let out = body.write().expect("outgoing stream");
-    let msg = format!("slept for {elapsed} millis\n");
-    out.blocking_write_and_flush(msg.as_bytes())
-        .expect("writing response");
+async fn echo_headers(req: Request<IncomingBody>, responder: Responder) -> Finished {
+    let mut res = Response::builder();
+    *res.headers_mut().unwrap() = req.into_parts().0.headers;
+    let res = res.body(empty()).unwrap();
+    responder.respond(res).await
+}
 
-    drop(out);
-    OutgoingBody::finish(body, None).unwrap();
+async fn echo_trailers(req: Request<IncomingBody>, res: Responder) -> Finished {
+    let body = res.start_response(Response::new(BodyForthcoming));
+    let (trailers, result) = match req.into_body().finish().await {
+        Ok(trailers) => (trailers, Ok(())),
+        Err(err) => (Default::default(), Err(std::io::Error::other(err))),
+    };
+    Finished::finish(body, result, trailers)
+}
+
+async fn not_found(_req: Request<IncomingBody>, responder: Responder) -> Finished {
+    let res = Response::builder()
+        .status(StatusCode::NOT_FOUND)
+        .body(empty())
+        .unwrap();
+    responder.respond(res).await
 }
