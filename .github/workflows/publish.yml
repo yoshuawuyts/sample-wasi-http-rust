@@ -1,4 +1,4 @@
-name: Publish a Wasm Component to GitHub Artifacts
+name: Build and publish a Wasm Component to GitHub Artifacts
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
 env:
   IMAGE_NAME: ${{ github.repository }}
   COMPONENT_NAME: rust-wasi-hello
+  CARGO_COMPONENT_VERSION: "0.16.0"
 
 jobs:
   publish:
@@ -21,6 +22,7 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -28,6 +30,7 @@ jobs:
           images: ghcr.io/${{ github.actor }}/{{ env.COMPONENT_NAME }}
           tags: |
             type=semver,pattern={{version}}
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
@@ -52,12 +55,14 @@ jobs:
             ${{ runner.os }}-
 
       - if: ${{ steps.cache-cargo.outputs.cache-hit != 'true' }}
-        name: Run install script
+        name: Install build dependencies
         continue-on-error: false
-        run: bash scripts/install.sh
+        run: |
+          cargo install cargo-component --force --version {{ env.CARGO_COMPONENT_VERSION }}
+          cargo install wkg --force 
 
-      - name: Run build script
-        run: bash scripts/build.sh
+      - name: Build the component
+        run: cargo component build --release
 
       - name: Publish to GitHub Container Registry
         id: publish
