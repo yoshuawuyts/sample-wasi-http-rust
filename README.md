@@ -5,6 +5,18 @@
 An example project showing how to build an HTTP server for WASI 0.2 built in
 Rust.
 
+## Routes
+
+The following HTTP routes are available from the component:
+
+```text
+/               # Hello world
+/wait           # Sleep for one second
+/echo           # Echo the HTTP body
+/echo-headers   # Echo the HTTP headers
+/echo-trailers  # Echo the HTTP trailers
+```
+
 ## Installation
 
 The easiest way to try this project is by opening it in a GitHub Codespace. This
