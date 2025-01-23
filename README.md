@@ -44,20 +44,6 @@ integrations which provide their own OCI integrations. Deployment will vary
 depending on you providers, though at their core they will tend to be variations
 on the pull + serve pattern we've shown here.
 
-## Roadmap
-
-- [x] Get a base version compiling
-- [x] Create a GitHub Actions Workflow
-- [x] Add routes to the HTTP handler
-- [ ] Create a wasm OCI publish action
-- [ ] Setup a GitHub Codespace with all tools pre-installed
-- [ ] Demo unit tests in CI
-- [ ] Automatically publish a package on GitHub Release
-- [ ] Add a load-testing example
-- [ ] Upstream and integrate `scripts/` into their respective packages
-- [ ] Add deploy remote artifact
-- [ ] Show wkg pull and run locally
-
 ## See Also
 
 **Hosts**
