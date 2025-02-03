@@ -15,4 +15,4 @@ proxy = true
 
 [dependencies]
 wit-bindgen-rt = { version = "0.37.0", features = ["bitflags"] }
-wstd = "0.5.0"
+wstd = "0.5.1"

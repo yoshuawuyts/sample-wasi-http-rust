@@ -127,9 +127,9 @@ dependencies = [
 
 [[package]]
 name = "wstd"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eca59b974fe7537ab5b7d7be480d3031130fd63b50559efe2a02574ce541cffd"
+checksum = "26293c0587d2203a141282311221f9ba0048425a04b21d9fcff8fc62fc8ecd75"
 dependencies = [
  "futures-core",
  "http",
@@ -142,9 +142,9 @@ dependencies = [
 
 [[package]]
 name = "wstd-macro"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "00b9b6728c1e3a0063f57ffe91d337e336cb0808790edc7ac51153771c8ba8b3"
+checksum = "75a8316f91fc3e508b03fdc979dec4ceeddb29744fc1c2c2ed825e00159f96f9"
 dependencies = [
  "quote",
  "syn",
